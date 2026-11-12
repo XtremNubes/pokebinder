@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ma Collection Pokémon</title>
+<style>
+:root{
+  --bg:#f4f5f9; --panel:#ffffff; --text:#1d2130; --muted:#6b7285; --line:#e2e5ee;
+  --accent:#e3350d; --accent2:#3b4cca; --ok:#1f9d55; --warn:#b7791f;
+  --shadow:0 1px 3px rgba(20,25,50,.08),0 4px 14px rgba(20,25,50,.06);
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#12141c; --panel:#1b1e29; --text:#eceef5; --muted:#9aa1b5; --line:#2b2f3e; --shadow:none; --warn:#e0b25a; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text)}
+a{color:var(--accent2);text-decoration:none}
+a:hover{text-decoration:underline}
+h1{font-size:22px;margin:0 0 4px}
+h2{font-size:17px;margin:22px 0 8px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+header.top{position:sticky;top:0;z-index:20;background:var(--accent);color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+header.top .in{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.brand{font-weight:800;font-size:18px;letter-spacing:.2px;color:#fff}
+.brand:hover{text-decoration:none}
+nav{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+nav a{color:#fff;padding:6px 12px;border-radius:999px;font-weight:600;font-size:14px;opacity:.88}
+nav a:hover{background:rgba(255,255,255,.18);text-decoration:none;opacity:1}
+nav a.on{background:#fff;color:var(--accent);opacity:1}
+
+main{max-width:1200px;margin:0 auto;padding:18px 16px 70px}
+.back{display:inline-block;margin-bottom:10px;font-weight:600}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:14px 16px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
+input[type=search],input[type=text],select{
+  font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-width:0}
+input[type=search],input[type=text]{flex:1 1 220px}
+button,.btn{font:inherit;font-weight:600;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer}
+button:hover,.btn:hover{border-color:var(--accent2);text-decoration:none}
+button.primary,.btn.primary{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+button.danger{color:var(--accent);border-color:var(--accent)}
+button:disabled{opacity:.5;cursor:default}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:var(--panel)}
+.seg button.on{background:var(--accent2);color:#fff}
+
+/* extensions */
+.group h2{display:flex;align-items:center;gap:8px}
+.sets{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.setcard{display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--text);min-height:78px}
+.setcard:hover{border-color:var(--accent2);text-decoration:none;box-shadow:var(--shadow)}
+.setcard .logo{width:64px;height:44px;object-fit:contain;flex:none}
+.setcard .logo.broken{visibility:hidden}
+.setcard .info{min-width:0;flex:1}
+.setcard b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin:5px 0 2px}
+.bar i{display:block;height:100%;width:0;background:var(--ok);border-radius:99px;transition:width .25s}
+
+/* page extension */
+.sethead{display:flex;gap:16px;align-items:center;margin-bottom:12px}
+.sethead img{max-height:64px;max-width:180px;object-fit:contain}
+.sethead img.broken{display:none}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.stat b{display:block;font-size:20px}
+.stat span{color:var(--muted);font-size:13px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:12px;margin-top:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;display:flex;flex-direction:column;gap:5px}
+.card.owned{border-color:var(--ok);box-shadow:0 0 0 1px var(--ok)}
+.imgwrap{position:relative;aspect-ratio:5/7;border-radius:8px;overflow:hidden;background:var(--line);cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-tap-highlight-color:transparent}
+.imgwrap::before{content:attr(data-n);position:absolute;color:var(--muted);font-weight:700;font-size:15px}
+.imgwrap.noimg{flex-direction:column;gap:2px;background:repeating-linear-gradient(135deg,var(--line) 0 10px,transparent 10px 20px),var(--panel);border:2px dashed var(--line)}
+.imgwrap.noimg::before{display:none}
+.imgwrap.noimg .ph{display:flex;flex-direction:column;align-items:center;text-align:center;padding:6px;color:var(--muted)}
+.imgwrap.noimg .ph b{font-size:26px;line-height:1.1;color:var(--text);opacity:.75}
+.imgwrap.noimg .ph small{font-size:11px;margin-top:2px}
+.card.owned .imgwrap.noimg{background:color-mix(in srgb,var(--ok) 18%,var(--panel));border-color:var(--ok)}
+.card.owned .imgwrap.noimg .ph b{color:var(--ok);opacity:1}
+.imgwrap img{position:relative;width:100%;height:100%;object-fit:cover;display:block;transition:filter .15s,opacity .15s;filter:grayscale(1);opacity:.42}
+.imgwrap img.broken{visibility:hidden}
+.card.owned .imgwrap img{filter:none;opacity:1}
+.qty{position:absolute;top:6px;right:6px;background:var(--ok);color:#fff;font-weight:800;font-size:13px;min-width:24px;height:24px;border-radius:99px;display:none;align-items:center;justify-content:center;padding:0 6px;box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.card.owned .qty{display:flex}
+.heart{position:absolute;top:5px;left:5px;z-index:2;width:30px;height:30px;padding:0;border-radius:99px;border:0;background:rgba(20,22,32,.55);color:#fff;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.heart:hover{background:rgba(20,22,32,.8);border:0}
+.card.wished .heart{background:#e11d48;color:#fff}
+.card.wished{border-color:#e11d48}
+.card.owned.wished{border-color:var(--ok)}
+.meta{display:flex;gap:6px;align-items:baseline;font-size:13px;min-height:19px}
+.meta .num{color:var(--muted);font-variant-numeric:tabular-nums;flex:none}
+.meta .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row{display:flex;align-items:center;justify-content:space-between;gap:4px;min-height:30px}
+.price{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;cursor:pointer;text-decoration:underline dotted var(--muted);text-underline-offset:3px}
+.rarwrap{min-height:20px}
+.rar{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;border:1px solid var(--line);color:var(--muted);vertical-align:top}
+.rar.t1{color:#3a7d44;border-color:#3a7d44}
+.rar.t2{color:#2b6cb0;border-color:#2b6cb0}
+.rar.t3{color:#7c3aed;border-color:#7c3aed}
+.rar.t4{color:#c2410c;border-color:#c2410c}
+.rar.t5{color:#4a3500;background:linear-gradient(135deg,#d4a017,#f2d26b);border-color:#d4a017}
+.ctl{display:none;gap:4px}
+.card.owned .ctl{display:inline-flex}
+.ctl button{padding:0;width:30px;height:28px;line-height:1;font-size:17px;border-radius:8px}
+
+/* listes */
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);font-size:14px}
+th{color:var(--muted);font-weight:600;font-size:13px}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+.wrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.wrow:last-child{border-bottom:0}
+.wrow img,.wrow .th{width:44px;height:62px;border-radius:5px;object-fit:cover;background:var(--line);flex:none}
+.wrow .th{display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:700;font-size:13px}
+.wrow img.broken{visibility:hidden}
+.wrow .wi{flex:1;min-width:0}
+.wrow .wi b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wrow .wp{font-weight:700;font-variant-numeric:tabular-nums;cursor:pointer;text-decoration:underline dotted var(--muted);text-underline-offset:3px;white-space:nowrap}
+.wrow button{padding:4px 10px}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;background:var(--ok);color:#fff;vertical-align:middle}
+details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:8px 0}
+summary{cursor:pointer;font-weight:700}
+details ul{margin:8px 0 0;padding-left:18px}
+details li{margin:2px 0;font-size:14px}
+.setname{font-weight:700;margin-top:10px}
+.field{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}
+.field label{min-width:150px;font-weight:600}
+.notice{border-left:4px solid var(--warn);background:var(--panel);border-radius:8px;padding:10px 14px;margin:10px 0}
+.err{border-left-color:var(--accent)}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1d2130;color:#fff;padding:10px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;max-width:90vw}
+#toast.show{opacity:1}
+
+/* ===== décoration ===== */
+body{background:radial-gradient(900px 420px at 105% -8%,color-mix(in srgb,var(--accent2) 14%,transparent),transparent 65%),radial-gradient(760px 400px at -8% 2%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 65%),var(--bg);background-attachment:fixed}
+header.top{background:radial-gradient(rgba(255,255,255,.16) 1.4px,transparent 1.6px) 0 0/16px 16px,linear-gradient(105deg,#e3350d 0%,#d02a5a 48%,#4a3fc4 100%);border-bottom:3px solid rgba(255,255,255,.25)}
+.brand::before{content:"✦";display:inline-block;margin-right:7px;color:#ffe27a;text-shadow:0 0 10px rgba(255,226,122,.9);animation:twinkle 2.8s ease-in-out infinite}
+@keyframes twinkle{0%,100%{transform:scale(1) rotate(0);opacity:1}50%{transform:scale(1.25) rotate(18deg);opacity:.75}}
+nav a.on{box-shadow:0 2px 8px rgba(0,0,0,.22)}
+h1{font-size:26px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;display:inline-block}
+h2{display:flex;align-items:center;gap:9px}
+h2::before{content:"";width:5px;height:1.05em;border-radius:99px;background:linear-gradient(var(--accent),var(--accent2));flex:none}
+button.primary,.btn.primary{background:linear-gradient(135deg,var(--accent2),#6a5be0);border:0;box-shadow:0 2px 8px color-mix(in srgb,var(--accent2) 45%,transparent)}
+button.primary:hover,.btn.primary:hover{filter:brightness(1.08)}
+.seg button.on{background:linear-gradient(135deg,var(--accent2),#6a5be0)}
+.panel,.stat,.setcard,.card{transition:transform .15s,box-shadow .15s,border-color .15s}
+.stat{border-top:3px solid var(--accent2);box-shadow:var(--shadow)}
+.stat:nth-child(2){border-top-color:var(--ok)}
+.stat:nth-child(3){border-top-color:#d4a017}
+.stat.complete{background:linear-gradient(135deg,color-mix(in srgb,#f2d26b 35%,var(--panel)),var(--panel));border-top-color:#d4a017}
+.stat.complete b::after{content:" 🏆"}
+.setcard{border-left:4px solid var(--accent2)}
+.setcard:hover{transform:translateY(-2px)}
+.setcard.done{border-left-color:#d4a017;background:linear-gradient(135deg,color-mix(in srgb,#f2d26b 22%,var(--panel)),var(--panel))}
+.setcard.done .bar i{background:linear-gradient(90deg,#d4a017,#f2d26b)}
+.bar i{background:linear-gradient(90deg,var(--ok),#54d38a)}
+.card{box-shadow:var(--shadow)}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(20,25,50,.18)}
+.card.owned{box-shadow:0 0 0 1px var(--ok),0 4px 16px color-mix(in srgb,var(--ok) 28%,transparent)}
+.card.wished:not(.owned){box-shadow:0 0 0 1px #e11d48,0 4px 16px rgba(225,29,72,.22)}
+.imgwrap::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .25s,background-position .7s;background:linear-gradient(115deg,transparent 28%,rgba(255,255,255,.5) 42%,rgba(110,200,255,.32) 49%,rgba(255,120,220,.32) 56%,rgba(255,235,120,.3) 62%,transparent 74%) 120% 0/260% 100%}
+.card:hover .imgwrap::after,.card.owned .imgwrap::after{opacity:1;background-position:-15% 0}
+.rar.t5{background-size:220% 100%;animation:shine 3.2s linear infinite}
+@keyframes shine{0%{background-position:0 0}100%{background-position:220% 0}}
+.rar.t4{background:color-mix(in srgb,#c2410c 8%,transparent)}
+.rar.t3{background:color-mix(in srgb,#7c3aed 8%,transparent)}
+.notice{box-shadow:var(--shadow)}
+#toast{background:linear-gradient(135deg,#2b2f5a,#1d2130);border:1px solid rgba(255,255,255,.15);box-shadow:0 6px 24px rgba(0,0,0,.35)}
+footer.foot{max-width:1200px;margin:0 auto;padding:6px 16px 36px;text-align:center;color:var(--muted);font-size:13px}
+footer.foot b{color:#e11d48}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:560px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+  nav{margin-left:0}
+  .wrow .btn{display:none}
+  .seg{width:100%}
+  .seg button{flex:1;padding:8px 4px;font-size:13px}
+  .field label{min-width:100%}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="brand" href="#sets" id="brand">Ma Collection Pokémon</a>
+  <nav id="nav">
+    <a href="#sets" data-v="sets">📚 Extensions</a>
+    <a href="#search" data-v="search">🔍 Recherche</a>
+    <a href="#mine" data-v="mine">📒 Ma collection</a>
+    <a href="#wish" data-v="wish">♥ Souhaits</a>
+    <a href="#compare" data-v="compare">🔄 Comparer</a>
+    <a href="#settings" data-v="settings">⚙️ Réglages</a>
+  </nav>
+</div></header>
+<main id="app"></main>
+<footer class="foot">Fait avec <b>♥</b> pour les collectionneurs · prix indicatifs</footer>
+<div id="toast" role="status"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ================= Config & stockage ================= */
+const LS = {data:'pokebinder.v1', prices:'pokebinder.prices.v2', sets:'pokebinder.sets.v1', series:'pokebinder.series.v1'};
+const DAY = 24*3600*1000;
+const API_ROOT = 'https://api.tcgdex.net/v2';
+const ASSETS = 'https://assets.tcgdex.net/';
+
+function lsGet(k, def){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; }catch(e){ return def; } }
+function lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
+
+const store = Object.assign({title:'Ma Collection Pokémon', pseudo:'', lang:'fr', autoPrices:true, collection:{}, custom:{}, wish:{}, rate:{v:0.89, ts:0}}, lsGet(LS.data, {}));
+if(!store.collection || typeof store.collection !== 'object' || Array.isArray(store.collection)) store.collection = {};
+if(!store.wish || typeof store.wish !== 'object' || Array.isArray(store.wish)) store.wish = {};
+if(!store.custom || typeof store.custom !== 'object' || Array.isArray(store.custom)) store.custom = {};
+if(!store.rate || typeof store.rate.v !== 'number' || !(store.rate.v > 0)) store.rate = {v: 0.89, ts: 0};
+if(store.lang !== 'fr' && store.lang !== 'en') store.lang = 'fr';
+let prices = lsGet(LS.prices, {});
+if(!prices || typeof prices !== 'object' || Array.isArray(prices)) prices = {};
+
+let saveTimer = null, warned = false;
+function saveNow(){
+  clearTimeout(saveTimer);
+  if(!lsSet(LS.data, store) && !warned){ warned = true; toast('⚠️ Impossible de sauvegarder dans ce navigateur (navigation privée ?)'); }
+}
+function save(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 150); }
+function savePrices(){ lsSet(LS.prices, prices); }
+window.addEventListener('beforeunload', saveNow);
+
+/* ================= Utilitaires ================= */
+const $ = (s, r) => (r || document).querySelector(s);
+const app = $('#app');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const eur = new Intl.NumberFormat('fr-FR', {style:'currency', currency:'EUR'});
+const fmt = n => eur.format(n);
+const api = () => API_ROOT + '/' + store.lang;
+
+let toastTimer = null;
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+async function getJSON(url){
+  const ctl = new AbortController();
+  const to = setTimeout(() => ctl.abort(), 25000);
+  try{
+    const r = await fetch(url, {signal: ctl.signal});
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  } finally { clearTimeout(to); }
+}
+
+function imgURL(base, q){
+  if(typeof base !== 'string' || base.indexOf(ASSETS) !== 0) return '';
+  return base + '/' + (q || 'low') + '.webp';
+}
+function logoURL(base){
+  if(typeof base !== 'string' || base.indexOf(ASSETS) !== 0) return '';
+  return base + '.webp';
+}
+const qty = id => (store.collection[id] && store.collection[id].q) || 0;
+const failedIds = {};   // cartes dont le prix n'a pas pu être chargé
+const rate = () => (store.rate && store.rate.v > 0) ? store.rate.v : 0.89;   // USD -> EUR
+
+// Détection des prix Cardmarket douteux : si plusieurs cartes d'une même extension pointent vers le même
+// produit Cardmarket, la base les a mélangées (fréquent sur les extensions toutes récentes).
+let sharedIdx = null;
+const setOf = id => { const i = id.lastIndexOf('-'); return i > 0 ? id.slice(0, i) : id; };
+function isShared(id){
+  const e = prices[id]; if(!e || !e[3]) return false;
+  if(!sharedIdx){
+    sharedIdx = {};
+    for(const k in prices){ const x = prices[k]; if(x && x[3]){ const key = setOf(k) + '|' + x[3]; sharedIdx[key] = (sharedIdx[key] || 0) + 1; } }
+  }
+  return sharedIdx[setOf(id) + '|' + e[3]] > 1;
+}
+// kind : manual (saisi) | cm (Cardmarket) | tp (estimation TCGplayer convertie) | cm? (Cardmarket douteux, sans autre source) | none
+function priceInfo(id){
+  const m = store.custom[id];
+  if(typeof m === 'number') return {v: m, kind: 'manual'};
+  const e = prices[id]; if(!e) return null;
+  const cm = typeof e[0] === 'number' ? e[0] : null, tp = typeof e[4] === 'number' ? e[4] : null;
+  const diverge = tp != null && cm != null && tp * rate() >= 10 && tp * rate() > 8 * cm;   // écart énorme : prix Cardmarket suspect
+  if(cm != null && !isShared(id) && !diverge) return {v: cm, kind: 'cm'};
+  if(tp != null) return {v: Math.round(tp * rate() * 100) / 100, kind: 'tp', cm: cm, usd: tp};
+  if(cm != null) return {v: cm, kind: 'cm?'};
+  return {v: null, kind: 'none'};
+}
+const rarityOf = id => (prices[id] && prices[id][5]) ? String(prices[id][5]) : '';
+function rarTier(r){
+  const n = norm(r);
+  if(/hyper|speciale|special|secret|rgb|futur|shiny|chromatique|gold/.test(n)) return 5;
+  if(/illustration/.test(n)) return 4;
+  if(/\b(ultra|double|ex|gx|vmax|vstar)\b/.test(n)) return 3;
+  if(/peu|uncommon/.test(n)) return 1;
+  if(/commune|common/.test(n)) return 0;
+  return 2;
+}
+const chipHTML = r => '<span class="rar t' + rarTier(r) + '" title="' + esc(r) + '">' + esc(String(r).replace(/Illustration spéciale rare/i, 'Illust. spéciale')) + '</span>';
+const priceOf = id => { const i = priceInfo(id); return i && typeof i.v === 'number' ? i.v : null; };
+function priceText(id){
+  if(!prices[id] && typeof store.custom[id] !== 'number') return failedIds[id] ? '⚠' : '…';
+  const i = priceInfo(id);
+  if(!i || i.v == null) return '—';
+  const t = fmt(i.v);
+  return i.kind === 'manual' ? t + ' ✎' : i.kind === 'tp' ? '≈ ' + t : i.kind === 'cm?' ? t + ' ?' : t;
+}
+function priceTitle(id){
+  const i = priceInfo(id);
+  if(!i) return 'Prix en cours de chargement';
+  if(i.kind === 'manual') return 'Prix saisi par toi (touche pour modifier)';
+  if(i.kind === 'tp') return 'Estimation : prix TCGplayer (' + i.usd + ' $) converti en euros. ' + (i.cm != null ? 'Le prix Cardmarket de la base (' + fmt(i.cm) + ') correspond probablement à une autre version de la carte. ' : '') + 'Touche pour saisir le vrai prix.';
+  if(i.kind === 'cm?') return 'Prix Cardmarket douteux (probablement une autre version de la carte). Touche pour saisir le vrai prix.';
+  if(i.kind === 'none') return 'Aucun prix disponible. Touche pour en saisir un.';
+  return 'Tendance Cardmarket. Touche pour saisir ton propre prix.';
+}
+
+let routeTok = 0;       // change à chaque navigation (annule les chargements en cours)
+let jobId = 0;          // chargement de prix en cours
+
+/* ================= API : extensions, séries, cartes ================= */
+let setsData = null;
+async function loadSets(){
+  if(setsData && setsData.lang === store.lang) return setsData;
+  const key = LS.sets + '.' + store.lang;
+  let raw = lsGet(key, null);
+  if(!raw || !raw.list || Date.now() - raw.ts > DAY){
+    try{
+      const res = await Promise.all([
+        getJSON(api() + '/sets'),
+        store.lang === 'en' ? Promise.resolve(null) : getJSON(API_ROOT + '/en/sets').catch(() => null)
+      ]);
+      const enMap = {}; (res[1] || []).forEach(s => { enMap[s.id] = s.name; });
+      raw = {ts: Date.now(), list: res[0].map(s => ({
+        id: s.id, name: s.name || s.id, alt: enMap[s.id] || '', logo: s.logo || '',
+        total: (s.cardCount && s.cardCount.total) || 0, official: (s.cardCount && s.cardCount.official) || 0
+      }))};
+      lsSet(key, raw);
+    }catch(e){ if(!raw || !raw.list) throw e; }
+  }
+  const byId = {}; raw.list.forEach(s => { byId[s.id] = s; });
+  setsData = {lang: store.lang, list: raw.list, byId: byId, groups: null};
+  return setsData;
+}
+
+async function loadGroups(sd){
+  if(sd.groups) return sd.groups;
+  const key = LS.series + '.' + store.lang;
+  let raw = lsGet(key, null);
+  if(!raw || !raw.groups || Date.now() - raw.ts > 7 * DAY){
+    const series = await getJSON(api() + '/series');
+    const groups = []; let idx = 0;
+    const worker = async () => {
+      while(idx < series.length){
+        const pos = idx++; const s = series[pos];
+        try{
+          const d = await getJSON(api() + '/series/' + encodeURIComponent(s.id));
+          groups.push({order: pos, id: s.id, name: d.name || s.name || s.id, setIds: (d.sets || []).map(x => x.id)});
+        }catch(e){}
+      }
+    };
+    await Promise.all([worker(), worker(), worker(), worker()]);
+    groups.sort((a, b) => a.order - b.order);
+    raw = {ts: Date.now(), groups: groups};
+    if(groups.length) lsSet(key, raw);
+  }
+  sd.groups = raw.groups;
+  return sd.groups;
+}
+
+const setCache = {};
+async function loadSet(id){
+  const k = store.lang + ':' + id;
+  if(setCache[k]) return setCache[k];
+  const s = await getJSON(api() + '/sets/' + encodeURIComponent(id));
+  setCache[k] = s;
+  return s;
+}
+
+/* ================= Prix (Cardmarket via TCGdex) ================= */
+function pickPrice(card){
+  const cm = card && card.pricing && card.pricing.cardmarket;
+  if(!cm) return null;
+  const list = [cm.trend, cm.avg, cm['trend-holo'], cm['avg-holo'], cm.low, cm['low-holo']];
+  for(const v of list){ if(typeof v === 'number' && v > 0) return v; }
+  return null;
+}
+// Identifiant produit TCGplayer : sert à afficher une image de remplacement quand TCGdex n'a pas encore l'image officielle.
+function pickPid(card){
+  const tp = card && card.pricing && card.pricing.tcgplayer;
+  if(!tp || typeof tp !== 'object') return null;
+  for(const k in tp){ const v = tp[k]; if(v && typeof v === 'object' && Number.isInteger(v.productId) && v.productId > 0) return v.productId; }
+  return null;
+}
+// Prix TCGplayer (USD) : variante « normale » en priorité.
+function pickTp(card){
+  const tp = card && card.pricing && card.pricing.tcgplayer;
+  if(!tp || typeof tp !== 'object') return null;
+  const order = ['normal', 'holofoil', 'reverse-holofoil'].concat(Object.keys(tp));
+  for(const k of order){
+    const v = tp[k];
+    if(v && typeof v === 'object'){
+      for(const f of ['marketPrice', 'midPrice', 'lowPrice']) if(typeof v[f] === 'number' && v[f] > 0) return v[f];
+    }
+  }
+  return null;
+}
+function pickProd(card){
+  const cm = card && card.pricing && card.pricing.cardmarket;
+  return (cm && Number.isInteger(cm.idProduct) && cm.idProduct > 0) ? cm.idProduct : null;
+}
+async function fetchPrice(id){
+  let r = null;
+  const read = card => ({p: pickPrice(card), pid: pickPid(card), prod: pickProd(card), tp: pickTp(card), rar: (card && card.rarity) ? String(card.rarity).slice(0, 60) : ''});
+  try{ r = read(await getJSON(api() + '/cards/' + encodeURIComponent(id))); }catch(e){}
+  if((!r || (r.p == null && r.pid == null)) && store.lang !== 'en'){
+    try{ r = read(await getJSON(API_ROOT + '/en/cards/' + encodeURIComponent(id))); }catch(e){}
+  }
+  if(!r) throw new Error('indisponible');
+  return {p: r.p == null ? null : Math.round(r.p * 100) / 100, pid: r.pid, prod: r.prod, tp: r.tp, rar: r.rar};
+}
+const altPid = id => (prices[id] && Number.isInteger(prices[id][2]) && prices[id][2] > 0) ? prices[id][2] : 0;
+const altURL = id => altPid(id) ? 'https://product-images.tcgplayer.com/fit-in/437x610/' + altPid(id) + '.jpg' : '';
+// Charge les prix manquants/périmés, 6 requêtes en parallèle.
+function startPrices(ids, onProgress, needPid){
+  const my = ++jobId;
+  const now = Date.now();
+  const todo = ids.filter(id => {
+    const e = prices[id];
+    if(!e || now - e[1] >= DAY) return true;
+    return e.length < 6;   // ancien cache sans rareté
+  });
+  const total = todo.length; let i = 0, done = 0, errors = 0;
+  if(!total){ onProgress && onProgress(0, 0, 0, null); return Promise.resolve({total: 0, errors: 0, aborted: false}); }
+  const worker = async () => {
+    while(i < todo.length){
+      if(my !== jobId) return;
+      const id = todo[i++];
+      try{ const r = await fetchPrice(id); prices[id] = [r.p, Date.now(), r.pid, r.prod, r.tp, r.rar]; sharedIdx = null; delete failedIds[id]; }catch(e){ errors++; failedIds[id] = 1; }
+      done++;
+      if(done % 25 === 0) savePrices();
+      if(my === jobId && onProgress) onProgress(done, total, errors, id);
+    }
+  };
+  const n = Math.min(6, total);
+  return Promise.all(Array.from({length: n}, worker)).then(() => { savePrices(); return {total: total, errors: errors, aborted: my !== jobId}; });
+}
+
+/* ================= Navigation ================= */
+function route(){
+  routeTok++; jobId++;
+  const tok = routeTok;
+  const h = location.hash.slice(1) || 'sets';
+  const parts = h.split('/');
+  const view = parts[0];
+  let arg = parts.slice(1).join('/');
+  try{ arg = decodeURIComponent(arg); }catch(e){}
+  document.querySelectorAll('#nav a').forEach(a => a.classList.toggle('on', a.dataset.v === (view === 'set' ? 'sets' : view)));
+  window.scrollTo(0, 0);
+  if(view === 'set' && arg) return viewSet(arg, tok);
+  if(view === 'search') return viewSearch(tok);
+  if(view === 'mine') return viewMine(tok);
+  if(view === 'wish') return viewWish(tok);
+  if(view === 'compare') return viewCompare(tok);
+  if(view === 'settings') return viewSettings(tok);
+  return viewSets(tok);
+}
+window.addEventListener('hashchange', route);
+
+function applyTitle(){
+  const t = store.title || 'Ma Collection Pokémon';
+  $('#brand').textContent = t; document.title = t;
+}
+
+function errorBox(msg){
+  return '<div class="notice err"><b>Oups.</b> ' + esc(msg) + '<br><span class="small muted">Vérifie ta connexion internet puis <a href="" onclick="location.reload();return false">recharge la page</a>.</span></div>';
+}
+
+/* ================= Vue : liste des extensions ================= */
+async function viewSets(tok){
+  app.innerHTML = '<h1>Extensions</h1><p class="muted">Choisis une extension, puis touche les cartes que tu possèdes.</p>' +
+    '<div class="toolbar"><input id="sq" type="search" placeholder="Rechercher une extension (ex : 30e, delta, base…)" autocomplete="off">' +
+    '<button id="sorder" type="button">↕ Inverser l\'ordre</button></div><div id="sets" class="muted">Chargement des extensions…</div>';
+  let sd;
+  try{ sd = await loadSets(); }catch(e){ if(tok === routeTok) $('#sets').outerHTML = errorBox('Impossible de charger la liste des extensions.'); return; }
+  if(tok !== routeTok) return;
+  let reverse = false, q = '';
+  const draw = () => {
+    const ownedBy = {};
+    for(const id in store.collection){ const s = store.collection[id].s; ownedBy[s] = (ownedBy[s] || 0) + 1; }
+    const terms = norm(q).split(/\s+/).filter(Boolean);
+    const match = s => { const hay = norm(s.name + ' ' + s.alt + ' ' + s.id); return terms.every(t => hay.indexOf(t) >= 0); };
+    let groups;
+    if(sd.groups && sd.groups.length){
+      const used = {}; groups = sd.groups.map(g => ({name: g.name, sets: g.setIds.map(i => sd.byId[i]).filter(Boolean)}));
+      groups.forEach(g => g.sets.forEach(s => { used[s.id] = 1; }));
+      const rest = sd.list.filter(s => !used[s.id]);
+      if(rest.length) groups.push({name: 'Autres', sets: rest});
+    } else groups = [{name: '', sets: sd.list.slice()}];
+    if(reverse){ groups = groups.slice().reverse().map(g => ({name: g.name, sets: g.sets.slice().reverse()})); }
+    let html = '', count = 0;
+    for(const g of groups){
+      const sets = g.sets.filter(match); if(!sets.length) continue;
+      count += sets.length;
+      html += '<div class="group">' + (g.name ? '<h2>' + esc(g.name) + ' <span class="muted small">(' + sets.length + ')</span></h2>' : '') + '<div class="sets">';
+      for(const s of sets){
+        const o = ownedBy[s.id] || 0, pct = s.total ? Math.min(100, Math.round(o / s.total * 100)) : 0;
+        const lg = logoURL(s.logo);
+        html += '<a class="setcard' + (pct === 100 ? ' done' : '') + '" href="#set/' + encodeURIComponent(s.id) + '">' +
+          (lg ? '<img class="logo" loading="lazy" alt="" src="' + esc(lg) + '" onerror="this.classList.add(\'broken\')">' : '<span class="logo"></span>') +
+          '<span class="info"><b>' + esc(s.name) + '</b><span class="muted small">' + esc(s.id) + (s.total ? ' · ' + s.total + ' cartes' : '') + '</span>' +
+          '<span class="bar"><i style="width:' + pct + '%"></i></span><span class="small muted">' + o + ' possédée' + (o > 1 ? 's' : '') + (pct === 100 ? ' · complète ✨' : '') + '</span></span></a>';
+      }
+      html += '</div></div>';
+    }
+    $('#sets').className = '';
+    $('#sets').innerHTML = html || '<p class="muted">Aucune extension ne correspond.</p>';
+  };
+  draw();
+  $('#sq').addEventListener('input', e => { q = e.target.value; draw(); });
+  $('#sorder').addEventListener('click', () => { reverse = !reverse; draw(); });
+  loadGroups(sd).then(() => { if(tok === routeTok) draw(); }).catch(() => {});
+}
+
+/* ================= Vue : une extension ================= */
+let cur = null;
+async function viewSet(id, tok){
+  app.innerHTML = '<a class="back" href="#sets">← Extensions</a><p class="muted">Chargement de l\'extension…</p>';
+  let set;
+  try{ set = await loadSet(id); }catch(e){ if(tok === routeTok) app.innerHTML = '<a class="back" href="#sets">← Extensions</a>' + errorBox('Impossible de charger cette extension (' + id + ').'); return; }
+  if(tok !== routeTok) return;
+  cur = {set: set, cards: Array.isArray(set.cards) ? set.cards : [], f: 'all', q: '', sort: 'num', rar: ''};
+  const lg = logoURL(set.logo);
+  const total = cur.cards.length;
+  app.innerHTML =
+    '<a class="back" href="#sets">← Extensions</a>' +
+    '<div class="sethead">' + (lg ? '<img alt="" src="' + esc(lg) + '" onerror="this.classList.add(\'broken\')">' : '') +
+    '<div><h1>' + esc(set.name || id) + '</h1><div class="muted small">' + esc(set.id) + (set.releaseDate ? ' · sortie le ' + esc(set.releaseDate) : '') + ' · ' + total + ' cartes</div></div></div>' +
+    '<div class="stats">' +
+      '<div class="stat"><b id="s-owned">0 / ' + total + '</b><span>cartes différentes possédées</span><div class="bar"><i id="s-bar"></i></div></div>' +
+      '<div class="stat"><b id="s-val">—</b><span>valeur estimée de mes cartes</span></div>' +
+      '<div class="stat"><b id="s-full">—</b><span>valeur de l\'extension complète</span></div>' +
+    '</div>' +
+    '<div class="toolbar">' +
+      '<div class="seg" id="seg"><button type="button" data-f="all" class="on">Toutes</button><button type="button" data-f="owned">Possédées</button><button type="button" data-f="missing">Manquantes</button><button type="button" data-f="wish">♥ Souhaits</button></div>' +
+      '<input id="cq" type="search" placeholder="Nom ou numéro…" autocomplete="off">' +
+      '<select id="crar" title="Filtrer par rareté"><option value="">Toutes les raretés</option></select>' +
+      '<select id="csort"><option value="num">Tri : numéro</option><option value="rar">Tri : rareté (rares d\'abord)</option><option value="pdesc">Tri : prix décroissant</option><option value="pasc">Tri : prix croissant</option></select>' +
+    '</div>' +
+    '<div class="toolbar"><button type="button" id="b-all">Tout cocher</button><button type="button" id="b-none">Tout décocher</button>' +
+    '<button type="button" id="b-prices">Actualiser les prix</button><span id="pstatus" class="muted small"></span></div>' +
+    '<div class="grid" id="grid"></div>' +
+    '<p class="muted small">Touche une carte pour la cocher. Utilise + et − pour gérer les doubles. Prix = tendance Cardmarket (€), mise à jour chaque jour. ≈ = estimation depuis TCGplayer, ✎ = prix saisi par toi. Touche un prix pour le corriger. Ce sont des estimations, pas une garantie de vente.</p>';
+  cur.noImg = {};
+  cur.cards.forEach(c => { if(!imgURL(c.image, 'low')) cur.noImg[c.id] = 1; });
+  const noImgIds = Object.keys(cur.noImg);
+  if(noImgIds.length){
+    const note = document.createElement('div'); note.className = 'notice'; note.id = 'imgnote';
+    $('#grid').before(note);
+    refreshImgNote();
+  }
+  const pn = document.createElement('div'); pn.className = 'notice'; pn.id = 'pricenote'; pn.style.display = 'none';
+  $('#grid').before(pn);
+  drawGrid(); updateStats(); refreshRarOptions();
+
+  $('#seg').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return;
+    cur.f = b.dataset.f; document.querySelectorAll('#seg button').forEach(x => x.classList.toggle('on', x === b)); drawGrid(); });
+  $('#cq').addEventListener('input', e => { cur.q = e.target.value; drawGrid(); });
+  $('#csort').addEventListener('change', e => { cur.sort = e.target.value; drawGrid(); });
+  $('#crar').addEventListener('change', e => { cur.rar = e.target.value; drawGrid(); });
+  $('#grid').addEventListener('click', onGridClick);
+  $('#b-all').addEventListener('click', () => {
+    if(!confirm('Cocher les ' + total + ' cartes de cette extension ?')) return;
+    cur.cards.forEach(c => { if(!qty(c.id)) setQty(c, 1); });
+    save(); drawGrid(); updateStats();
+  });
+  $('#b-none').addEventListener('click', () => {
+    if(!confirm('Décocher toutes les cartes de cette extension ?')) return;
+    cur.cards.forEach(c => { if(qty(c.id)) setQty(c, 0); });
+    save(); drawGrid(); updateStats();
+  });
+  $('#b-prices').addEventListener('click', () => { cur.cards.forEach(c => { if(prices[c.id]) prices[c.id][1] = 0; }); loadSetPrices(tok); });
+  if(store.autoPrices) loadSetPrices(tok);
+  else {
+    $('#pstatus').textContent = 'Prix non chargés (option désactivée dans les réglages).';
+    if(noImgIds.length) loadSetPrices(tok, noImgIds);   // uniquement pour retrouver les images de remplacement
+  }
+}
+
+function setQty(c, q){
+  if(q <= 0){ delete store.collection[c.id]; return; }
+  store.collection[c.id] = {q: Math.min(q, 999), n: c.name || '', s: (cur && cur.set && cur.set.id) || setOf(c.id), l: c.localId || ''};
+}
+const isWished = id => !!store.wish[id];
+function setWish(c, on){
+  if(!on){ delete store.wish[c.id]; return; }
+  const i = (typeof c.image === 'string' && c.image.indexOf(ASSETS) === 0) ? c.image : '';
+  store.wish[c.id] = {n: c.name || '', s: (cur && cur.set && cur.set.id) || setOf(c.id), l: c.localId || '', i: i};
+}
+
+function loadSetPrices(tok, only){
+  const ids = only || cur.cards.map(c => c.id);
+  const label = only ? 'Images de remplacement' : 'Prix';
+  const st = $('#pstatus');
+  let tick = false;
+  const p = startPrices(ids, (done, total, errors, id) => {
+    if(tok !== routeTok) return;
+    if(id) updateTilePrice(id);
+    st.textContent = label + ' : ' + done + ' / ' + total + (errors ? ' (' + errors + ' indisponibles)' : '');
+    if(!tick){ tick = true; requestAnimationFrame(() => { tick = false; if(tok === routeTok){ updateStats(); refreshImgNote(); refreshPriceNote(); refreshRarOptions(); } }); }
+  }, id => cur && cur.noImg && cur.noImg[id]);
+  p.then(r => {
+    if(tok !== routeTok || r.aborted) return;
+    updateStats(); refreshImgNote(); refreshPriceNote(); refreshRarOptions();
+    const okTxt = only ? 'Images à jour ✓' : 'Prix à jour ✓';
+    if(!r.total) st.textContent = okTxt;
+    else if(r.errors === r.total && r.total > 3) st.textContent = 'Impossible de récupérer les données pour le moment.';
+    else st.textContent = okTxt + (r.errors ? ' (' + r.errors + ' cartes sans réponse)' : '');
+    if($('#csort') && cur.sort !== 'num') drawGrid();
+  });
+}
+
+function visibleCards(){
+  const terms = norm(cur.q).split(/\s+/).filter(Boolean);
+  let list = cur.cards.filter(c => {
+    const q = qty(c.id);
+    if(cur.f === 'owned' && !q) return false;
+    if(cur.f === 'missing' && q) return false;
+    if(cur.f === 'wish' && !store.wish[c.id]) return false;
+    if(cur.rar && rarityOf(c.id) !== cur.rar) return false;
+    if(terms.length){ const hay = norm(c.name + ' ' + c.localId); if(!terms.every(t => hay.indexOf(t) >= 0)) return false; }
+    return true;
+  });
+  if(cur.sort === 'rar'){
+    const tier = c => { const r = rarityOf(c.id); return r ? rarTier(r) : -1; };
+    list = list.slice().sort((a, b) => tier(b) - tier(a));
+  } else if(cur.sort !== 'num'){
+    const key = c => { const p = priceOf(c.id); return p == null ? -1 : p; };
+    list = list.slice().sort((a, b) => cur.sort === 'pdesc' ? key(b) - key(a) : (key(a) < 0 ? 1 : key(b) < 0 ? -1 : key(a) - key(b)));
+  }
+  return list;
+}
+function tileHTML(c){
+  const q = qty(c.id);
+  const off = imgURL(c.image, 'low');
+  const u = off || altURL(c.id);          // image officielle, sinon image de remplacement
+  const w = isWished(c.id);
+  return '<div class="card' + (q ? ' owned' : '') + (w ? ' wished' : '') + '" data-id="' + esc(c.id) + '">' +
+    '<div class="imgwrap' + (u ? '' : ' noimg') + '" data-act="toggle" data-n="' + esc(c.localId) + '">' +
+      (u ? '<img loading="lazy" decoding="async" alt="' + esc(c.name) + '" src="' + esc(u) + '" onerror="this.classList.add(\'broken\')">' : '<span class="ph"><b>' + esc(c.localId) + '</b><small>image à venir</small></span>') +
+      '<span class="qty">' + (q > 1 ? '×' + q : '✓') + '</span>' +
+      '<button type="button" class="heart" data-act="wish" aria-pressed="' + w + '" aria-label="' + (w ? 'Retirer de' : 'Ajouter à') + ' ma liste de souhaits" title="' + (w ? 'Dans ma liste de souhaits' : 'Ajouter à ma liste de souhaits') + '">' + (w ? '♥' : '♡') + '</button></div>' +
+    '<div class="meta"><span class="num">' + esc(c.localId) + '</span><span class="nm" title="' + esc(c.name) + '">' + esc(c.name) + '</span></div>' +
+    '<div class="rarwrap">' + (rarityOf(c.id) ? chipHTML(rarityOf(c.id)) : '') + '</div>' +
+    '<div class="row"><span class="price" data-act="price" title="' + esc(priceTitle(c.id)) + '">' + esc(priceText(c.id)) + '</span>' +
+    '<span class="ctl"><button type="button" data-act="minus" aria-label="Retirer un exemplaire">−</button><button type="button" data-act="plus" aria-label="Ajouter un exemplaire">+</button></span></div></div>';
+}
+function drawGrid(){
+  const list = visibleCards();
+  $('#grid').innerHTML = list.length ? list.map(tileHTML).join('') : '<p class="muted">Aucune carte à afficher.</p>';
+}
+function onGridClick(e){
+  const act = e.target.closest('[data-act]'); if(!act) return;
+  const tile = act.closest('.card'); if(!tile) return;
+  const c = cur.cards.find(x => x.id === tile.dataset.id); if(!c) return;
+  if(act.dataset.act === 'price'){ editPrice(c); return; }
+  if(act.dataset.act === 'wish'){
+    const on = !isWished(c.id); setWish(c, on); save(); refreshTile(tile, c);
+    if(!on && cur.f === 'wish') drawGrid();
+    toast(on ? '♥ Ajoutée à ta liste de souhaits' : 'Retirée de ta liste de souhaits');
+    return;
+  }
+  const q = qty(c.id);
+  if(act.dataset.act === 'toggle'){ if(q === 0) setQty(c, 1); else if(q === 1) setQty(c, 0); else return; }
+  else if(act.dataset.act === 'plus') setQty(c, q + 1);
+  else if(act.dataset.act === 'minus') setQty(c, q - 1);
+  let got = false;
+  if(q === 0 && qty(c.id) > 0 && isWished(c.id)){ setWish(c, false); got = true; }   // carte obtenue : elle quitte la liste
+  save(); refreshTile(tile, c); updateStats();
+  if(got) toast('Carte obtenue : retirée de ta liste de souhaits ✓');
+}
+function editPrice(c){
+  const i = priceInfo(c.id);
+  const ans = prompt('Prix de « ' + (c.name || c.id) + ' » en € (laisse vide pour revenir au prix automatique) :', i && i.v != null ? String(i.v).replace('.', ',') : '');
+  if(ans === null) return;
+  const t = ans.trim().replace(',', '.').replace(/[€\s\u202f\u00a0]/g, '');
+  if(t === '') delete store.custom[c.id];
+  else {
+    const v = parseFloat(t);
+    if(!isFinite(v) || v < 0){ toast('Prix invalide'); return; }
+    store.custom[c.id] = Math.round(v * 100) / 100;
+  }
+  save(); updateTilePrice(c.id); updateStats(); refreshPriceNote();
+}
+function refreshPriceNote(){
+  const el = $('#pricenote'); if(!el || !cur) return;
+  let n = 0;
+  for(const c of cur.cards){ if(typeof store.custom[c.id] !== 'number' && isShared(c.id)) n++; }
+  if(!n){ el.style.display = 'none'; return; }
+  el.style.display = '';
+  el.innerHTML = '<b>' + n + ' carte(s) avec un prix Cardmarket douteux.</b> La base de données associe plusieurs versions d\'une même carte au même produit Cardmarket (fréquent sur les extensions toutes récentes). Pour ces cartes, l\'appli affiche une estimation depuis TCGplayer (signe ≈ : prix américain converti en euros). Pour le prix exact, touche le prix d\'une carte et saisis celui que tu vois sur Cardmarket.';
+}
+function repaintPrices(){
+  if(!cur || !$('#grid')) return;
+  document.querySelectorAll('#grid .card').forEach(t => updateTilePrice(t.dataset.id));
+  updateStats(); refreshPriceNote();
+}
+function refreshTile(tile, c){
+  const q = qty(c.id);
+  tile.classList.toggle('owned', q > 0);
+  const b = tile.querySelector('.qty'); if(b) b.textContent = q > 1 ? '×' + q : '✓';
+  const w = isWished(c.id); tile.classList.toggle('wished', w);
+  const h = tile.querySelector('.heart');
+  if(h){ h.textContent = w ? '♥' : '♡'; h.setAttribute('aria-pressed', String(w)); h.title = w ? 'Dans ma liste de souhaits' : 'Ajouter à ma liste de souhaits'; h.setAttribute('aria-label', (w ? 'Retirer de' : 'Ajouter à') + ' ma liste de souhaits'); }
+}
+const tileEl = id => document.querySelector('.card[data-id="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]');
+function updateTilePrice(id){
+  const tile = tileEl(id); if(!tile) return;
+  const el = tile.querySelector('.price'); if(el){ el.textContent = priceText(id); el.title = priceTitle(id); }
+  const rw = tile.querySelector('.rarwrap'); if(rw && !rw.firstChild && rarityOf(id)) rw.innerHTML = chipHTML(rarityOf(id));
+  // une image de remplacement vient d'être trouvée pour une carte sans image officielle
+  const wrap = tile.querySelector('.imgwrap'), ph = wrap && wrap.querySelector('.ph'), a = altURL(id);
+  if(ph && a){
+    const img = document.createElement('img');
+    img.loading = 'lazy'; img.decoding = 'async'; img.alt = tile.querySelector('.nm') ? tile.querySelector('.nm').textContent : ''; img.src = a;
+    img.addEventListener('error', () => img.classList.add('broken'));
+    wrap.classList.remove('noimg'); ph.replaceWith(img);
+  }
+}
+function refreshRarOptions(){
+  const sel = $('#crar'); if(!sel || !cur) return;
+  const cnt = {};
+  cur.cards.forEach(c => { const r = rarityOf(c.id); if(r) cnt[r] = (cnt[r] || 0) + 1; });
+  const names = Object.keys(cnt).sort((a, b) => rarTier(b) - rarTier(a) || a.localeCompare(b, 'fr'));
+  const sig = names.map(n => n + cnt[n]).join('|');
+  if(sel.dataset.sig === sig) return;
+  sel.dataset.sig = sig;
+  sel.innerHTML = '<option value="">Toutes les raretés</option>' + names.map(n => '<option value="' + esc(n) + '">' + esc(n) + ' (' + cnt[n] + ')</option>').join('');
+  sel.value = cur.rar || '';
+}
+function refreshImgNote(){
+  const el = $('#imgnote'); if(!el || !cur) return;
+  const miss = cur.cards.filter(c => !imgURL(c.image, 'low'));
+  if(!miss.length){ el.remove(); return; }
+  const alt = miss.filter(c => altURL(c.id)).length, left = miss.length - alt;
+  let h = '<b>' + (miss.length === cur.cards.length ? 'Images officielles pas encore disponibles.' : miss.length + ' carte(s) sans image officielle.') + '</b> La base de données (TCGdex) ne les a pas encore. ';
+  if(alt) h += alt + ' carte(s) affichent une image de remplacement (version anglaise, source TCGplayer) : elles seront remplacées automatiquement par les officielles dès qu\'elles arriveront. ';
+  if(left) h += left + ' carte(s) n\'ont pas d\'image pour le moment. ';
+  h += 'Tu peux cocher normalement.';
+  el.innerHTML = h;
+}
+function updateStats(){
+  if(!cur || !$('#s-owned')) return;
+  let owned = 0, val = 0, full = 0, noPrice = 0, ownedNoPrice = 0, pending = 0;
+  for(const c of cur.cards){
+    const q = qty(c.id), p = priceOf(c.id);
+    if(q > 0) owned++;
+    if(p != null){ full += p; val += p * q; }
+    else { if(!prices[c.id] && !failedIds[c.id]) pending++; else noPrice++; if(q > 0) ownedNoPrice++; }
+  }
+  const total = cur.cards.length;
+  $('#s-owned').textContent = owned + ' / ' + total;
+  $('#s-bar').style.width = (total ? Math.round(owned / total * 100) : 0) + '%';
+  const sc = $('#s-owned').closest('.stat'); if(sc) sc.classList.toggle('complete', total > 0 && owned === total);
+  $('#s-val').textContent = (pending && !Object.keys(prices).length) ? '…' : fmt(val);
+  $('#s-full').textContent = pending && !full ? '…' : fmt(full);
+  const note = [];
+  if(pending) note.push('prix en cours de chargement');
+  if(ownedNoPrice && !pending) note.push(ownedNoPrice + ' carte(s) possédée(s) sans prix');
+  $('#s-val').title = note.join(' · ');
+}
+
+/* ================= Vue : recherche dans toutes les extensions ================= */
+function accentVariants(q){
+  if(/[éèêëàâîïôûùç]/i.test(q)) return [q];   // déjà des accents : on respecte la saisie
+  const out = [q], idx = [];
+  for(let i = 0; i < q.length; i++) if(q[i].toLowerCase() === 'e') idx.push(i);
+  if(idx.length && idx.length <= 6){
+    idx.forEach(i => out.push(q.slice(0, i) + 'é' + q.slice(i + 1)));
+    out.push(q.replace(/e/gi, 'é'), q.replace(/e/gi, 'è'));
+  }
+  return Array.from(new Set(out)).slice(0, 8);
+}
+async function viewSearch(tok){
+  app.innerHTML = '<h1>Recherche</h1><p class="muted">Cherche un Pokémon ou une carte dans toutes les extensions (ex : steelix, dracaufeu, méga-rayquaza).</p>' +
+    '<div class="toolbar"><input id="gq" type="search" placeholder="Nom du Pokémon ou de la carte…" autocomplete="off">' +
+    '<label class="small" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="gown"> Seulement mes cartes</label></div>' +
+    '<div id="gstatus" class="muted small"></div><div id="gres"></div>' +
+    '<div class="toolbar"><button type="button" id="gmore" style="display:none">Afficher plus</button></div>';
+  let sd = null;
+  try{ sd = await loadSets(); }catch(e){}
+  if(tok !== routeTok) return;
+  let results = null, shown = 60, seq = 0, timer = null, rank = {};
+  const buildRank = () => { rank = {}; if(sd && sd.groups){ let n = 0; sd.groups.forEach(g => g.setIds.forEach(id => { rank[id] = n++; })); } };
+  buildRank();
+  const draw = () => {
+    if(!results) return;
+    const own = $('#gown').checked;
+    let list = results.filter(c => !own || qty(c.id) > 0);
+    list = list.slice().sort((a, b) => (rank[setOf(b.id)] ?? -1) - (rank[setOf(a.id)] ?? -1));   // extensions récentes d'abord
+    const vis = list.slice(0, shown);
+    cur = {set: null, cards: vis, f: 'all', q: '', sort: 'num', rar: '', noImg: {}};
+    const groups = new Map();
+    vis.forEach(c => { const k = setOf(c.id); if(!groups.has(k)) groups.set(k, []); groups.get(k).push(c); });
+    let html = '';
+    groups.forEach((cards, k) => {
+      const info = sd && sd.byId[k];
+      html += '<h2><a href="#set/' + encodeURIComponent(k) + '">' + esc(info ? info.name : k) + '</a> <span class="muted small">' + esc(k) + ' · ' + cards.length + ' carte(s)</span></h2><div class="grid">' + cards.map(tileHTML).join('') + '</div>';
+    });
+    $('#gres').innerHTML = html || '<p class="muted">Aucune carte trouvée.</p>';
+    $('#gstatus').textContent = list.length + ' résultat(s)' + (list.length > shown ? ' — ' + shown + ' affichés' : '');
+    $('#gmore').style.display = list.length > shown ? '' : 'none';
+    // prix, raretés et images de remplacement des cartes affichées
+    startPrices(vis.map(c => c.id), (d, t, er, id) => { if(tok === routeTok && id) updateTilePrice(id); });
+  };
+  if(sd) loadGroups(sd).then(() => { buildRank(); if(tok === routeTok && results) draw(); }).catch(() => {});
+  const run = async () => {
+    const q = $('#gq').value.trim();
+    if(q.length < 2){ results = null; $('#gres').innerHTML = ''; $('#gstatus').textContent = ''; $('#gmore').style.display = 'none'; return; }
+    const my = ++seq; $('#gstatus').textContent = 'Recherche…';
+    try{
+      // l'API distingue les accents : on essaie aussi les variantes avec é / è (mega -> méga, flabebe -> flabébé)
+      const parts = await Promise.all(accentVariants(q).map(v => getJSON(api() + '/cards?name=' + encodeURIComponent(v)).catch(() => null)));
+      if(my !== seq || tok !== routeTok) return;
+      if(parts.every(p => p === null)) throw new Error('réseau');
+      const seen = {}, merged = [];
+      parts.forEach(p => (Array.isArray(p) ? p : []).forEach(c => { if(c && typeof c.id === 'string' && !seen[c.id]){ seen[c.id] = 1; merged.push(c); } }));
+      results = merged.slice(0, 600); shown = 60; draw();
+    }catch(e){ if(my === seq && tok === routeTok) $('#gstatus').textContent = 'Recherche impossible pour le moment (connexion ?).'; }
+  };
+  $('#gq').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(run, 350); });
+  $('#gown').addEventListener('change', () => { shown = 60; draw(); });
+  $('#gmore').addEventListener('click', () => { shown += 60; draw(); });
+  $('#gres').addEventListener('click', onGridClick);
+  $('#gq').focus();
+}
+
+/* ================= Vue : ma collection ================= */
+async function viewMine(tok){
+  app.innerHTML = '<h1>Ma collection</h1><p class="muted">Chargement…</p>';
+  let sd = null;
+  try{ sd = await loadSets(); }catch(e){}
+  if(tok !== routeTok) return;
+  const render = () => {
+    const ids = Object.keys(store.collection);
+    if(!ids.length){
+      app.innerHTML = '<h1>Ma collection</h1><div class="panel">Tu n\'as encore coché aucune carte. Va dans <a href="#sets">Extensions</a>, ouvre une extension et touche tes cartes.</div>';
+      return;
+    }
+    let cards = 0, val = 0, unknown = 0; const per = {};
+    for(const id of ids){
+      const e = store.collection[id], p = priceOf(id);
+      cards += e.q;
+      const g = per[e.s] || (per[e.s] = {uniq: 0, n: 0, val: 0, unk: 0});
+      g.uniq++; g.n += e.q;
+      if(p != null){ g.val += p * e.q; val += p * e.q; } else { g.unk++; unknown++; }
+    }
+    const rows = Object.keys(per).sort((a, b) => per[b].val - per[a].val).map(s => {
+      const g = per[s], info = sd && sd.byId[s];
+      return '<tr><td><a href="#set/' + encodeURIComponent(s) + '">' + esc(info ? info.name : s) + '</a></td><td class="r">' + g.uniq + (info && info.total ? ' / ' + info.total : '') + '</td><td class="r">' + g.n + '</td><td class="r">' + fmt(g.val) + (g.unk ? ' <span class="muted" title="cartes sans prix connu">+?</span>' : '') + '</td></tr>';
+    }).join('');
+    const top = ids.filter(id => priceOf(id) != null).sort((a, b) => priceOf(b) * store.collection[b].q - priceOf(a) * store.collection[a].q).slice(0, 10).map(id => {
+      const e = store.collection[id];
+      const info = sd && sd.byId[e.s];
+      return '<tr><td>' + esc(e.n) + ' <span class="muted small">#' + esc(e.l) + '</span></td><td>' + esc(info ? info.name : e.s) + '</td><td class="r">' + e.q + '</td><td class="r">' + fmt(priceOf(id)) + '</td></tr>';
+    }).join('');
+    app.innerHTML = '<h1>Ma collection</h1>' +
+      '<div class="stats">' +
+        '<div class="stat"><b>' + cards + '</b><span>cartes au total (doubles inclus)</span></div>' +
+        '<div class="stat"><b>' + ids.length + '</b><span>cartes différentes</span></div>' +
+        '<div class="stat"><b>' + fmt(val) + '</b><span>valeur estimée' + (unknown ? ' (' + unknown + ' sans prix chargé)' : '') + '</span></div>' +
+      '</div>' +
+      '<div class="toolbar"><button type="button" class="primary" id="m-prices">Actualiser les prix de ma collection</button><span id="mstatus" class="muted small"></span></div>' +
+      '<h2>Par extension</h2><div class="panel"><table><thead><tr><th>Extension</th><th class="r">Différentes</th><th class="r">Total</th><th class="r">Valeur</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      (top ? '<h2>Mes cartes les plus chères</h2><div class="panel"><table><thead><tr><th>Carte</th><th>Extension</th><th class="r">Qté</th><th class="r">Prix unité</th></tr></thead><tbody>' + top + '</tbody></table></div>' : '');
+    $('#m-prices').addEventListener('click', () => {
+      ids.forEach(id => { if(prices[id]) prices[id][1] = 0; });
+      const st = $('#mstatus'); $('#m-prices').disabled = true;
+      startPrices(ids, (d, t, er) => { if(tok === routeTok) st.textContent = 'Prix : ' + d + ' / ' + t + (er ? ' (' + er + ' indisponibles)' : ''); })
+        .then(r => { if(tok === routeTok && !r.aborted){ render(); toast(r.errors === r.total && r.total ? 'Prix indisponibles pour le moment' : 'Prix mis à jour ✓'); } });
+    });
+  };
+  render();
+  // charge en arrière-plan les prix manquants pour afficher une valeur dès l'ouverture
+  const missing = Object.keys(store.collection).filter(id => !prices[id]);
+  if(store.autoPrices && missing.length){
+    startPrices(missing).then(r => { if(tok === routeTok && !r.aborted) render(); });
+  }
+}
+
+/* ================= Vue : liste de souhaits ================= */
+async function viewWish(tok){
+  app.innerHTML = '<h1>Ma liste de souhaits</h1><p class="muted">Chargement…</p>';
+  let sd = null;
+  try{ sd = await loadSets(); }catch(e){}
+  if(tok !== routeTok) return;
+  let sort = 'set';
+  const nameOf = s => (sd && sd.byId[s]) ? sd.byId[s].name : s;
+  const render = () => {
+    const ids = Object.keys(store.wish);
+    if(!ids.length){
+      app.innerHTML = '<h1>Ma liste de souhaits</h1><div class="panel">Ta liste est vide. Touche le cœur ♡ en haut à gauche d\'une carte (dans une extension ou dans la recherche) pour l\'ajouter ici. Quand tu coches la carte comme possédée, elle quitte la liste toute seule.</div>';
+      return;
+    }
+    let total = 0, unknown = 0;
+    ids.forEach(id => { const p = priceOf(id); if(p != null) total += p; else unknown++; });
+    const row = id => {
+      const e = store.wish[id], u = imgURL(e.i, 'low') || altURL(id), r = rarityOf(id), q = qty(id);
+      return '<div class="wrow" data-id="' + esc(id) + '">' +
+        (u ? '<img loading="lazy" alt="" src="' + esc(u) + '" onerror="this.classList.add(\'broken\')">' : '<span class="th">' + esc(e.l) + '</span>') +
+        '<div class="wi"><b title="' + esc(e.n) + '"><a href="#set/' + encodeURIComponent(e.s) + '">' + esc(e.n) + '</a> <span class="muted small">#' + esc(e.l) + '</span></b>' +
+        '<span class="muted small">' + esc(nameOf(e.s)) + '</span> ' + (r ? chipHTML(r) : '') + (q ? ' <span class="tag">possédée ×' + q + '</span>' : '') + '</div>' +
+        '<span class="wp" data-w="price" title="' + esc(priceTitle(id)) + '">' + esc(priceText(id)) + '</span>' +
+        '<a class="btn" href="#set/' + encodeURIComponent(e.s) + '" title="Ouvrir l\'extension">Voir</a>' +
+        '<button type="button" data-w="del" aria-label="Retirer de la liste" title="Retirer de la liste">✕</button></div>';
+    };
+    const byNum = (a, b) => String(store.wish[a].l).localeCompare(String(store.wish[b].l), 'fr', {numeric: true});
+    let body = '';
+    if(sort === 'price'){
+      const key = id => { const p = priceOf(id); return p == null ? -1 : p; };
+      body = '<div class="panel">' + ids.slice().sort((a, b) => key(b) - key(a)).map(row).join('') + '</div>';
+    } else {
+      const by = {};
+      ids.forEach(id => { (by[store.wish[id].s] || (by[store.wish[id].s] = [])).push(id); });
+      body = Object.keys(by).sort((a, b) => nameOf(a).localeCompare(nameOf(b), 'fr')).map(s =>
+        '<h2>' + esc(nameOf(s)) + ' <span class="muted small">(' + by[s].length + ')</span></h2><div class="panel">' + by[s].sort(byNum).map(row).join('') + '</div>').join('');
+    }
+    app.innerHTML = '<h1>Ma liste de souhaits</h1>' +
+      '<div class="stats"><div class="stat"><b>' + ids.length + '</b><span>cartes recherchées</span></div>' +
+      '<div class="stat"><b>' + fmt(total) + '</b><span>coût estimé pour tout avoir' + (unknown ? ' (' + unknown + ' sans prix chargé)' : '') + '</span></div></div>' +
+      '<div class="toolbar"><select id="w-sort"><option value="set">Classer par extension</option><option value="price">Classer par prix décroissant</option></select>' +
+      '<button type="button" id="w-prices">Actualiser les prix</button><button type="button" id="w-copy">Copier la liste</button><span id="wstatus" class="muted small"></span></div>' + body +
+      '<p class="muted small">Touche un prix pour le corriger. Les prix sont des estimations (Cardmarket, ou ≈ TCGplayer converti).</p>';
+    $('#w-sort').value = sort;
+    $('#w-sort').addEventListener('change', e => { sort = e.target.value; render(); });
+    $('#w-prices').addEventListener('click', () => {
+      ids.forEach(id => { if(prices[id]) prices[id][1] = 0; });
+      $('#w-prices').disabled = true;
+      startPrices(ids, (d, t, er) => { if(tok === routeTok && $('#wstatus')) $('#wstatus').textContent = 'Prix : ' + d + ' / ' + t + (er ? ' (' + er + ' indisponibles)' : ''); })
+        .then(r => { if(tok === routeTok && !r.aborted){ render(); toast(r.errors === r.total && r.total ? 'Prix indisponibles pour le moment' : 'Prix mis à jour ✓'); } });
+    });
+    $('#w-copy').addEventListener('click', () => {
+      const lines = ids.slice().sort((a, b) => nameOf(store.wish[a].s).localeCompare(nameOf(store.wish[b].s), 'fr') || byNum(a, b)).map(id => {
+        const e = store.wish[id], p = priceOf(id);
+        return '- ' + e.n + ' #' + e.l + ' (' + nameOf(e.s) + ')' + (p != null ? ' ~' + fmt(p) : '');
+      });
+      copyText((store.pseudo ? 'Cartes que je cherche (' + store.pseudo + ') :\n' : 'Cartes que je cherche :\n') + lines.join('\n'));
+    });
+  };
+  render();
+  app.addEventListener('click', function h(e){
+    if(tok !== routeTok){ app.removeEventListener('click', h); return; }
+    const a = e.target.closest('[data-w]'); if(!a) return;
+    const rw = a.closest('.wrow'); if(!rw) return;
+    const id = rw.dataset.id, en = store.wish[id]; if(!en) return;
+    if(a.dataset.w === 'del'){ delete store.wish[id]; save(); render(); toast('Retirée de ta liste de souhaits'); }
+    else if(a.dataset.w === 'price'){
+      editPrice({id: id, name: en.n});
+      render();
+    }
+  });
+  const missing = Object.keys(store.wish).filter(id => !prices[id]);
+  if(store.autoPrices && missing.length){
+    startPrices(missing).then(r => { if(tok === routeTok && !r.aborted) render(); });
+  }
+}
+function copyText(t){
+  const fallback = () => {
+    const ta = document.createElement('textarea'); ta.value = t; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select();
+    let ok = false; try{ ok = document.execCommand('copy'); }catch(e){}
+    ta.remove(); toast(ok ? 'Liste copiée ✓' : 'Copie impossible sur ce navigateur');
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(() => toast('Liste copiée ✓'), fallback);
+  else fallback();
+}
+
+/* ================= Sauvegarde / import ================= */
+function exportData(){
+  return JSON.stringify({app: 'pokebinder', v: 1, pseudo: store.pseudo || '', date: new Date().toISOString(), collection: store.collection, wish: store.wish});
+}
+function parseBackup(text){
+  let o; try{ o = JSON.parse(text); }catch(e){ throw new Error('Ce fichier n\'est pas valide.'); }
+  if(!o || o.app !== 'pokebinder' || !o.collection || typeof o.collection !== 'object') throw new Error('Ce fichier ne vient pas de cette appli.');
+  const col = {}; let n = 0;
+  for(const id in o.collection){
+    if(++n > 30000) break;
+    const e = o.collection[id]; if(!e) continue;
+    const q = Math.max(0, Math.min(999, parseInt(e.q, 10) || 0)); if(!q) continue;
+    col[String(id).slice(0, 40)] = {q: q, n: String(e.n || '').slice(0, 80), s: String(e.s || '').slice(0, 40), l: String(e.l || '').slice(0, 20)};
+  }
+  let wish = null;
+  if(o.wish && typeof o.wish === 'object' && !Array.isArray(o.wish)){
+    wish = {}; let m = 0;
+    for(const id in o.wish){
+      if(++m > 30000) break;
+      const e = o.wish[id]; if(!e || typeof e !== 'object') continue;
+      const i = (typeof e.i === 'string' && e.i.indexOf(ASSETS) === 0) ? e.i.slice(0, 200) : '';
+      wish[String(id).slice(0, 40)] = {n: String(e.n || '').slice(0, 80), s: String(e.s || '').slice(0, 40), l: String(e.l || '').slice(0, 20), i: i};
+    }
+  }
+  return {pseudo: String(o.pseudo || '').slice(0, 40), date: String(o.date || ''), collection: col, wish: wish};
+}
+function download(name, text){
+  const b = new Blob([text], {type: 'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+}
+function exportFile(){
+  const who = (store.pseudo || 'collection').replace(/[^\w-]+/g, '_');
+  download('pokebinder-' + who + '-' + new Date().toISOString().slice(0, 10) + '.json', exportData());
+}
+
+/* ================= Vue : comparer ================= */
+let other = null;
+async function viewCompare(tok){
+  let sd = null; try{ sd = await loadSets(); }catch(e){}
+  if(tok !== routeTok) return;
+  app.innerHTML = '<h1>Comparer avec un ami</h1>' +
+    '<div class="panel"><p style="margin-top:0"><b>1.</b> Exporte ta collection et envoie le fichier à ton ami (ou récupère le sien).<br><b>2.</b> Charge son fichier ici : l\'appli te montre ce que vous pouvez vous échanger.</p>' +
+    '<div class="toolbar" style="margin-bottom:0"><button type="button" id="c-export">Exporter ma collection</button>' +
+    '<label class="btn primary" for="c-file">Charger le fichier d\'un ami</label><input type="file" id="c-file" accept=".json,application/json" hidden></div></div>' +
+    '<div id="cres"></div>';
+  $('#c-export').addEventListener('click', exportFile);
+  $('#c-file').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0]; if(!f) return;
+    try{ other = parseBackup(await f.text()); }catch(err){ toast(err.message); return; }
+    show(); e.target.value = '';
+  });
+  const nameOf = (s) => (sd && sd.byId[s]) ? sd.byId[s].name : s;
+  function section(title, ids, src, withPrice){
+    if(!ids.length) return '<details><summary>' + esc(title) + ' <span class="muted">(0)</span></summary></details>';
+    const by = {};
+    ids.forEach(id => { const e = src[id]; (by[e.s] || (by[e.s] = [])).push(id); });
+    let html = '<details' + (ids.length < 40 ? ' open' : '') + '><summary>' + esc(title) + ' <span class="muted">(' + ids.length + ')</span></summary>';
+    Object.keys(by).sort().forEach(s => {
+      html += '<div class="setname">' + esc(nameOf(s)) + '</div><ul>';
+      by[s].sort((a, b) => String(src[a].l).localeCompare(String(src[b].l), 'fr', {numeric: true})).forEach(id => {
+        const e = src[id], p = withPrice ? priceOf(id) : null;
+        html += '<li><span class="muted">#' + esc(e.l) + '</span> ' + esc(e.n) + (e.q > 1 ? ' <span class="muted">×' + e.q + '</span>' : '') + (p != null ? ' · ' + fmt(p) : '') + '</li>';
+      });
+      html += '</ul>';
+    });
+    return html + '</details>';
+  }
+  function show(){
+    if(!other) return;
+    const mine = store.collection, th = other.collection;
+    const mk = Object.keys(mine), tk = Object.keys(th);
+    const iGive = mk.filter(id => mine[id].q >= 2 && !th[id]);
+    const iHaveNot = mk.filter(id => !th[id]);
+    const theyGive = tk.filter(id => th[id].q >= 2 && !mine[id]);
+    const theyHaveNot = tk.filter(id => !mine[id]);
+    const common = mk.filter(id => th[id]);
+    const who = other.pseudo || 'ton ami';
+    $('#cres').innerHTML = '<h2>Résultat : toi vs ' + esc(who) + '</h2>' +
+      '<div class="stats"><div class="stat"><b>' + mk.length + '</b><span>cartes différentes chez toi</span></div>' +
+      '<div class="stat"><b>' + tk.length + '</b><span>cartes différentes chez ' + esc(who) + '</span></div>' +
+      '<div class="stat"><b>' + common.length + '</b><span>cartes en commun</span></div></div>' +
+      (other.wish ? '<h2>Selon vos listes de souhaits</h2>' +
+        section(who + ' cherche ces cartes et tu les as', mk.filter(id => other.wish[id] && !th[id]), mine, true) +
+        section('Tu cherches ces cartes et ' + who + ' les a', tk.filter(id => store.wish[id] && !mine[id]), th, true) : '') +
+      '<h2>Échanges possibles</h2>' +
+      section('Mes doubles que ' + who + ' n\'a pas', iGive, mine, true) +
+      section(who + ' a des doubles que je n\'ai pas', theyGive, th, true) +
+      '<h2>Tout le reste</h2>' +
+      section('J\'ai, ' + who + ' n\'a pas', iHaveNot, mine, true) +
+      section(who + ' a, je n\'ai pas', theyHaveNot, th, true) +
+      section('Cartes en commun', common, mine, false);
+  }
+  show();
+}
+
+/* ================= Vue : réglages ================= */
+function viewSettings(tok){
+  const n = Object.keys(store.collection).length;
+  app.innerHTML = '<h1>Réglages</h1>' +
+    '<div class="panel">' +
+      '<div class="field"><label for="st-title">Titre de l\'appli</label><input type="text" id="st-title" maxlength="40" value="' + esc(store.title) + '"></div>' +
+      '<div class="field"><label for="st-pseudo">Ton pseudo</label><input type="text" id="st-pseudo" maxlength="40" placeholder="Visible par tes amis dans la comparaison" value="' + esc(store.pseudo) + '"></div>' +
+      '<div class="field"><label for="st-lang">Langue des cartes</label><select id="st-lang"><option value="fr">Français</option><option value="en">English</option></select></div>' +
+      '<div class="field"><label for="st-auto">Prix automatiques</label><input type="checkbox" id="st-auto"' + (store.autoPrices ? ' checked' : '') + '> <span class="muted small">Charge les prix et les raretés en ouvrant une extension</span></div>' +
+      '<div class="field"><label>Taux USD → EUR</label><span>' + rate().toLocaleString('fr-FR', {maximumFractionDigits: 4}) + '</span> <span class="muted small">mis à jour automatiquement (sert aux prix ≈ estimés depuis TCGplayer)</span></div>' +
+      '<div class="field"><label>Prix saisis à la main</label><span>' + Object.keys(store.custom).length + '</span> <button type="button" id="st-clear-custom">Tout remettre en automatique</button></div>' +
+    '</div>' +
+    '<h2>Sauvegarde</h2><div class="panel">' +
+      '<p style="margin-top:0">Ta collection (' + n + ' cartes différentes) et ta liste de souhaits (' + Object.keys(store.wish).length + ' cartes) sont enregistrées <b>dans ce navigateur</b>. Si tu changes d\'appareil ou vides les données du navigateur, elle disparaît : fais une sauvegarde de temps en temps.</p>' +
+      '<div class="toolbar" style="margin-bottom:0"><button type="button" class="primary" id="st-export">Télécharger ma sauvegarde</button>' +
+      '<label class="btn" for="st-file">Restaurer une sauvegarde</label><input type="file" id="st-file" accept=".json,application/json" hidden>' +
+      '<button type="button" class="danger" id="st-reset">Tout effacer</button></div>' +
+    '</div>';
+  $('#st-lang').value = store.lang;
+  $('#st-title').addEventListener('input', e => { store.title = e.target.value.trim() || 'Ma Collection Pokémon'; applyTitle(); save(); });
+  $('#st-pseudo').addEventListener('input', e => { store.pseudo = e.target.value.trim(); save(); });
+  $('#st-auto').addEventListener('change', e => { store.autoPrices = e.target.checked; save(); });
+  $('#st-lang').addEventListener('change', e => { store.lang = e.target.value; setsData = null; save(); toast(store.lang === 'fr' ? 'Cartes en français' : 'Cards in English'); });
+  $('#st-clear-custom').addEventListener('click', () => { store.custom = {}; save(); toast('Prix remis en automatique'); viewSettings(tok); });
+  $('#st-export').addEventListener('click', exportFile);
+  $('#st-file').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0]; if(!f) return;
+    try{
+      const b = parseBackup(await f.text());
+      if(!confirm('Remplacer ta collection actuelle par cette sauvegarde (' + Object.keys(b.collection).length + ' cartes différentes' + (b.wish ? ', ' + Object.keys(b.wish).length + ' souhaits' : '') + ') ?')) return;
+      store.collection = b.collection; if(b.wish) store.wish = b.wish; if(b.pseudo && !store.pseudo) store.pseudo = b.pseudo;
+      saveNow(); toast('Sauvegarde restaurée ✓'); viewSettings(tok);
+    }catch(err){ toast(err.message); }
+    e.target.value = '';
+  });
+  $('#st-reset').addEventListener('click', () => {
+    if(!confirm('Effacer toute ta collection et ta liste de souhaits ? Cette action est définitive (pense à faire une sauvegarde avant).')) return;
+    store.collection = {}; store.custom = {}; store.wish = {}; saveNow(); toast('Collection effacée'); viewSettings(tok);
+  });
+}
+
+/* ================= Démarrage ================= */
+async function refreshRate(){
+  if(store.rate && Date.now() - store.rate.ts < 12 * 3600 * 1000) return;
+  try{
+    const j = await getJSON('https://api.frankfurter.dev/v1/latest?base=USD&symbols=EUR');
+    const v = j && j.rates && j.rates.EUR;
+    if(typeof v === 'number' && v > 0.3 && v < 3){ store.rate = {v: v, ts: Date.now()}; save(); repaintPrices(); }
+  }catch(e){}
+}
+applyTitle();
+route();
+refreshRate();
+})();
+</script>
+</body>
+</html>
